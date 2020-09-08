@@ -47,3 +47,6 @@
 	path = src/scrublet
 	url = https://github.com/vib-singlecell-nf/scrublet.git
 	branch = develop
+[submodule "src/Seurat"]
+	path = src/Seurat
+	url = https://github.com/Qlostridium/Seurat.git

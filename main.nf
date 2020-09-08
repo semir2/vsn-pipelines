@@ -2,7 +2,8 @@ import static groovy.json.JsonOutput.*
 
 nextflow.preview.dsl=2
 
-include { 
+/*
+include {
     INIT;
 } from './src/utils/workflows/utils' params(params)
 INIT()
@@ -13,7 +14,7 @@ include {
 include {
     getDataChannel;
 } from './src/channels/channels' params(params)
-
+*/
 // run multi-sample with bbknn, output a scope loom file
 workflow bbknn {
 
@@ -83,7 +84,7 @@ workflow bbknn_scenic {
         bbknn as BBKNN;
     } from './workflows/bbknn' params(params)
     include {
-        scenic_append as SCENIC_APPEND; 
+        scenic_append as SCENIC_APPEND;
     } from './src/scenic/main' params(params)
     include {
         PUBLISH as PUBLISH_BBKNN_SCENIC;
@@ -118,9 +119,9 @@ workflow harmony_scenic {
     } from "./src/utils/workflows/utils" params(params)
 
     getDataChannel | HARMONY
-    SCENIC_APPEND( 
+    SCENIC_APPEND(
         HARMONY.out.filteredloom,
-        HARMONY.out.scopeloom 
+        HARMONY.out.scopeloom
     )
     PUBLISH_HARMONY_SCENIC(
         SCENIC_APPEND.out,
@@ -150,7 +151,7 @@ workflow single_sample {
         "loom",
         null,
         false
-    )    
+    )
 
 }
 
@@ -168,7 +169,7 @@ workflow multi_sample {
         "loom",
         null,
         false
-    ) 
+    )
 
 }
 
@@ -259,8 +260,8 @@ workflow scenic {
         PUBLISH as PUBLISH_SCENIC;
     } from "./src/utils/workflows/utils" params(params)
 
-    SCENIC( 
-        Channel.of( tuple(params.global.project_name, file(params.sc.scenic.filteredLoom))) 
+    SCENIC(
+        Channel.of( tuple(params.global.project_name, file(params.sc.scenic.filteredLoom)))
     )
     PUBLISH_SCENIC(
         SCENIC.out,
@@ -354,12 +355,12 @@ workflow freemuxlet {
     include {
         freemuxlet as FREEMUXLET;
     } from './workflows/popscle' params(params)
-    
+
     getDataChannel | FREEMUXLET
 }
 
 workflow demuxlet {
-    include { 
+    include {
         demuxlet as DEMUXLET;
     } from './workflows/popscle' params(params)
 
@@ -384,7 +385,7 @@ workflow single_sample_cellranger {
 
 workflow cellranger_multi_sample {
 
-    include { 
+    include {
         multi_sample as MULTI_SAMPLE;
     } from './workflows/multi_sample' params(params)
 
@@ -407,7 +408,7 @@ workflow cellranger_multi_sample_demuxlet {
     } from './workflows/popscle' params(params)
 
     data = cellranger()
-    MULTI_SAMPLE(        
+    MULTI_SAMPLE(
         data.map {
             tuple(it[0], it[1], "10x_cellranger_mex", "h5ad")
         }
@@ -423,7 +424,7 @@ workflow cellranger_libraries_multi_sample {
     } from './workflows/multi_sample' params(params)
 
     data = cellranger_libraries()
-    MULTI_SAMPLE(        
+    MULTI_SAMPLE(
         data.map {
             tuple(it[0], it[1], "10x_cellranger_mex", "h5ad")
         }
@@ -499,7 +500,7 @@ workflow nemesh {
 
 workflow sra_cellranger_bbknn {
 
-    main: 
+    main:
         include {
             getChannel as getSRAChannel;
         } from './src/channels/sra' params(params)
@@ -513,15 +514,15 @@ workflow sra_cellranger_bbknn {
         include {
             bbknn as BBKNN;
         } from './workflows/bbknn' params(params)
-        
-        // Run 
+
+        // Run
         DOWNLOAD_FROM_SRA( getSRAChannel( params.data.sra ) )
         SC__CELLRANGER__PREPARE_FOLDER( DOWNLOAD_FROM_SRA.out.groupTuple() )
         SC__CELLRANGER__COUNT(
             file(params.sc.cellranger.count.transcriptome),
             SC__CELLRANGER__PREPARE_FOLDER.out
         )
-        BBKNN( 
+        BBKNN(
             SC__CELLRANGER__COUNT.out.map {
                 it -> tuple(it[0], it[1], "10x_cellranger_mex", "h5ad")
             }
@@ -553,7 +554,65 @@ workflow sra_cellranger_bbknn_scenic {
         "loom",
         null,
         false
-    )    
+    )
 
 }
 
+workflow hashtags_rnaseq {
+	include {
+		run_HTO
+		} from './src/Seurat/workflows/HTO.nf' params(params)
+	include {
+		run_RNA
+		} from './src/Seurat/workflows/RNA.nf' params(params)
+
+	input = Channel.fromPath(params.Seurat.seuratObjBuilder.inputFile)
+					.map{ file -> tuple(params.global.sampleName,file)}
+	run_HTO(input)
+	run_RNA(run_HTO.out)
+}
+
+workflow hashtags_citeseq {
+
+	include {
+		run_HTO
+		} from './src/Seurat/workflows/HTO.nf' params(params)
+	include {
+		run_RNA
+		} from './src/Seurat/workflows/RNA.nf' params(params)
+	include {
+		run_ADT
+		} from './src/Seurat/workflows/ADT.nf' params(params)
+
+	input = Channel.fromPath(params.Seurat.seuratObjBuilder.inputFile)
+					.map{ file -> tuple(params.global.sampleName,file)}
+	run_HTO(input)
+	run_RNA(run_HTO.out)
+	run_ADT(run_RNA.out)
+}
+
+workflow citeseq {
+
+	include {
+		run_RNA
+		} from './src/Seurat/workflows/RNA.nf' params(params)
+	include {
+		run_ADT
+		} from './src/Seurat/workflows/ADT.nf' params(params)
+	include {
+		SEURAT__SEURAT_OBJECT_BUILDER
+	} from './src/Seurat/processes/seuratObjBuilder/seuratObjBuilder.nf' params(params)
+	
+	if(params.Seurat.seuratObjBuilder.inputFile == null){
+		seuratInput = Channel.fromPath(params.Seurat.inputRdsFile)
+						.map{ file -> tuple(params.global.sampleName,file)}
+	} else {
+		input = Channel.fromPath(params.Seurat.seuratObjBuilder.inputFile)
+						.map{ file -> tuple(params.global.sampleName,file)}
+		seuratInput = SEURAT__SEURAT_OBJECT_BUILDER(input)
+	}
+
+
+	run_RNA(seuratInput)
+	run_ADT(RNA.out)
+}
