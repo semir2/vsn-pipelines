@@ -50,3 +50,6 @@
 [submodule "src/Seurat"]
 	path = src/Seurat
 	url = https://github.com/Qlostridium/Seurat.git
+[submodule "src/SingleCellExperiment"]
+	path = src/SingleCellExperiment
+	url = https://github.com/Qlostridium/SingleCellExperiment.git

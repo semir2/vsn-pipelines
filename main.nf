@@ -602,7 +602,7 @@ workflow citeseq {
 	include {
 		SEURAT__SEURAT_OBJECT_BUILDER
 	} from './src/Seurat/processes/seuratObjBuilder/seuratObjBuilder.nf' params(params)
-	
+
 	if(params.Seurat.seuratObjBuilder.inputFile == null){
 		seuratInput = Channel.fromPath(params.Seurat.inputRdsFile)
 						.map{ file -> tuple(params.global.sampleName,file)}
@@ -615,4 +615,25 @@ workflow citeseq {
 
 	run_RNA(seuratInput)
 	run_ADT(RNA.out)
+}
+
+workflow rnaseq {
+	include {
+		R_rnaseq
+	} from './workflows/R_rnaseq.nf' params(params)
+
+	include {
+		SEURAT__SEURAT_OBJECT_BUILDER
+	} from './src/Seurat/processes/seuratObjBuilder/seuratObjBuilder.nf' params(params)
+	
+	if(params.Seurat.seuratObjBuilder.inputFile == null){
+		seuratInput = Channel.fromPath(params.Seurat.inputRdsFile)
+						.map{ file -> tuple(params.global.sampleName,file)}
+	} else {
+		input = Channel.fromPath(params.Seurat.seuratObjBuilder.inputFile)
+						.map{ file -> tuple(params.global.sampleName,file)}
+		seuratInput = SEURAT__SEURAT_OBJECT_BUILDER(input)
+	}
+
+	R_rnaseq(seuratInput)
 }
