@@ -53,3 +53,6 @@
 [submodule "src/SingleCellExperiment"]
 	path = src/SingleCellExperiment
 	url = https://github.com/Qlostridium/SingleCellExperiment.git
+[submodule "src/DoubletFinder"]
+	path = src/DoubletFinder
+	url = https://github.com/Qlostridium/DoubletFinder.git
