@@ -56,3 +56,7 @@
 [submodule "src/DoubletFinder"]
 	path = src/DoubletFinder
 	url = https://github.com/Qlostridium/DoubletFinder.git
+[submodule "src/directs"]
+	path = src/directs
+	url = https://github.com/vib-singlecell-nf/directs.git
+	branch = develop
