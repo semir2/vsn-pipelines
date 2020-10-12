@@ -561,44 +561,44 @@ workflow sra_cellranger_bbknn_scenic {
 workflow hashtags_rnaseq {
 	include {
 		run_HTO
-		} from './src/Seurat/workflows/HTO.nf' params(params)
+	} from './src/Seurat/workflows/HTO.nf' params(params)
 	include {
-		run_RNA
-		} from './src/Seurat/workflows/RNA.nf' params(params)
+		R_rnaseq
+	} from './workflows/R_rnaseq.nf' params(params)
 
 	input = Channel.fromPath(params.Seurat.seuratObjBuilder.inputFile)
 					.map{ file -> tuple(params.global.sampleName,file)}
 	run_HTO(input)
-	run_RNA(run_HTO.out)
+	R_rnaseq(run_HTO.out)
 }
 
 workflow hashtags_citeseq {
 
 	include {
 		run_HTO
-		} from './src/Seurat/workflows/HTO.nf' params(params)
+	} from './src/Seurat/workflows/HTO.nf' params(params)
 	include {
-		run_RNA
-		} from './src/Seurat/workflows/RNA.nf' params(params)
+		R_rnaseq
+	} from './workflows/R_rnaseq.nf' params(params)
 	include {
 		run_ADT
-		} from './src/Seurat/workflows/ADT.nf' params(params)
+	} from './src/Seurat/workflows/ADT.nf' params(params)
 
 	input = Channel.fromPath(params.Seurat.seuratObjBuilder.inputFile)
 					.map{ file -> tuple(params.global.sampleName,file)}
 	run_HTO(input)
-	run_RNA(run_HTO.out)
-	run_ADT(run_RNA.out)
+	R_rnaseq(run_HTO.out)
+	run_ADT(R_rnaseq.out)
 }
 
 workflow citeseq {
 
 	include {
-		run_RNA
-		} from './src/Seurat/workflows/RNA.nf' params(params)
+		R_rnaseq
+	} from './workflows/R_rnaseq.nf' params(params)
 	include {
 		run_ADT
-		} from './src/Seurat/workflows/ADT.nf' params(params)
+	} from './src/Seurat/workflows/ADT.nf' params(params)
 	include {
 		SEURAT__SEURAT_OBJECT_BUILDER
 	} from './src/Seurat/processes/seuratObjBuilder/seuratObjBuilder.nf' params(params)
@@ -613,8 +613,8 @@ workflow citeseq {
 	}
 
 
-	run_RNA(seuratInput)
-	run_ADT(RNA.out)
+	R_rnaseq(seuratInput)
+	run_ADT(R_rnaseq.out)
 }
 
 workflow rnaseq {
@@ -625,7 +625,7 @@ workflow rnaseq {
 	include {
 		SEURAT__SEURAT_OBJECT_BUILDER
 	} from './src/Seurat/processes/seuratObjBuilder/seuratObjBuilder.nf' params(params)
-	
+
 	if(params.Seurat.seuratObjBuilder.inputFile == null){
 		seuratInput = Channel.fromPath(params.Seurat.inputRdsFile)
 						.map{ file -> tuple(params.global.sampleName,file)}
