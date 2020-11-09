@@ -67,9 +67,9 @@ The **Single Sample Workflows** perform a "best practices" scRNA-seq analysis. M
     * - single_sample_scrublet
       - Ind. samples + Scrublet
       - |single_sample_scrublet|
-	* - R_rnaseq
-	  - seurat + SCTranform
-	  - 
+    * - R_rnaseq
+      - seurat + SCTranform
+      - tbd
 
 
 Sample Aggregation Workflows
