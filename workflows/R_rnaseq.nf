@@ -61,6 +61,13 @@ workflow R_rnaseq {
 		SEURAT__CLUSTERING(SEURAT__DIMENSIONALITY_REDUCTION_PCA.out[0],"SCT")
 		SEURAT__ANNOTATION_GRAPHS(SEURAT__CLUSTERING.out[0],"SCT")
 		DOUBLETFINDER__RUN(SEURAT__CLUSTERING.out[0])
+
+		if(params.R_rnaseq.outformat == "h5ad"){
+			output = SEURAT__SEURAT_TO_ANNDATA(DOUBLETFINDER__RUN.out[0],"SCT")
+		} else {
+			output = DOUBLETFINDER__RUN.out[0]
+		}
+
 	emit:
-		DOUBLETFINDER__RUN.out[0]
+		output
 }
