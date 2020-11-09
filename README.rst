@@ -67,6 +67,9 @@ The **Single Sample Workflows** perform a "best practices" scRNA-seq analysis. M
     * - single_sample_scrublet
       - Ind. samples + Scrublet
       - |single_sample_scrublet|
+	* - R_rnaseq
+	  - seurat + SCTranform
+	  - 
 
 
 Sample Aggregation Workflows
@@ -169,4 +172,3 @@ If VSN-Pipelines is useful for your research, consider citing:
 .. |mnncorrect| image:: https://github.com/vib-singlecell-nf/vsn-pipelines/workflows/mnncorrect/badge.svg
     :target: https://vsn-pipelines.readthedocs.io/en/latest/pipelines.html#mnncorrect-mnncorrect
     :alt: MNN-correct Pipeline
-
